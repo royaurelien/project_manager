@@ -26,6 +26,7 @@
 
     # always loaded
     'data': [
+        'data/mail_data.xml',
         # 'security/ir.model.access.csv',
         'views/project_views.xml',
         'views/project_task_views.xml',
