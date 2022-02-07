@@ -15,16 +15,21 @@ class ProjectTask(models.Model):
     @api.model
     def _default_attendees(self):
         partners = self.env.user.partner_id
-        if self.project_id.partner_spoc_id:
-            partners |= self.project_id.partner_spoc_id
+
         return partners
 
-    def _get_companies(self):
+    def get_companies(self):
         # partners = self.env.user.partner_id
-        company_ids = self.attendee_ids.mapped('company_name')
+        # company_ids = self.attendee_ids.mapped('company_id').partner_id
+
+        partner_ids = self.attendee_ids.filtered(lambda rec: rec.company_type == 'company')
+        others = self.attendee_ids - partner_ids
+        partner_ids |= others.filtered(lambda rec: rec.parent_id).mapped('parent_id')
+        partner_ids |= self.attendee_ids.mapped('company_id.partner_id')
+
         _logger.error(self.attendee_ids)
 
-        companies = [(rec.id, rec.name) for rec in company_ids]
+        companies = [(rec.id, rec.name) for rec in partner_ids]
         _logger.warning(companies)
 
         return companies
@@ -47,7 +52,7 @@ class ProjectTask(models.Model):
     @api.onchange('workshop_subject', 'is_workshop')
     def _onchange_workshop(self):
         if self.is_workshop and self.workshop_subject:
-            self.name = "Workshop: {}".format(self.workshop_subject)
+            self.name = "{}: {}".format(self.project_id.workshop_name, self.workshop_subject)
 
 
     def action_toggle_workshop_lock(self):

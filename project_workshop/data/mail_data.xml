@@ -4,7 +4,7 @@
     <data>
 
 
-        <record id="email_template_workshop" model="mail.template">
+        <record id="email_template_workshop_2" model="mail.template">
             <field name="name">Workshop: Send by email</field>
             <field name="model_id" ref="project.model_project_task"/>
             <field name="subject">${object.name or 'n/a' }</field>
@@ -15,14 +15,20 @@
     <p style="margin: 0px; padding: 0px; font-size: 13px;">
         Hello,
         <br/><br/>
-        Please find report of the workshop <strong>${object.workshop_subject}</strong> that took place on ${object.workshop_location} at ${object.workshop_date}.
+        Please find report of the workshop <strong>${object.workshop_subject}</strong> that took place on ${object.workshop_location} at ${object.workshop_date.strftime('%d %b, %Y')}.
         <br/><br/>
         The following were present :
         <br/>
         <ul>
         % for attendee in object.attendee_ids:
             <li>
-                <span style="margin-left:5px">${attendee.name}, ${attendee.parent_name}
+                <span style="margin-left:5px">${attendee.name},
+                % if attendee.parent_name
+                    ${attendee.parent_name}
+                % endif
+                % if attendee.company_name
+                    ${attendee.company_name}
+                % endif
                 % if attendee.function :
                  - ${attendee.function or ''}
                 % endif
@@ -31,13 +37,130 @@
         % endfor
         </ul>
 
-
         <br/><br/>
         Do not hesitate to contact us if you have any questions.
         <br/>
     </p>
-${object.workshop_content}
 </div>
+<div>
+${object.workshop_content | safe}
+</div>
+            </field>
+            <!-- <field name="report_template" ref="action_report_saleorder"/> -->
+            <!-- <field name="report_name">${(object.name or '').replace('/','_')}</field> -->
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="email_template_workshop" model="mail.template">
+            <field name="name">Workshop: Send by email</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">${object.name or 'n/a' }</field>
+            <field name="email_from">${(object.user_id.email_formatted or user.email_formatted) | safe}</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="body_html" type="html">
+<table style="padding-top:16px;background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td align="center">
+<table style="padding:16px;background-color: white; color: #454748; border-collapse:separate;" width="590" cellspacing="0" cellpadding="0" border="0">
+<tbody>
+    <!-- HEADER -->
+    <tr>
+        <td style="min-width:590px;" align="center">
+            <table style="min-width:590px;background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;" width="590" cellspacing="0" cellpadding="0" border="0">
+                <tbody><tr><td valign="middle">
+                    <span style="font-size:10px;">Votre compte</span><br/>
+                    <span style="font-size:20px;font-weight: bold;">
+                        ${object.user_id.name}
+                    </span>
+                </td><td valign="middle" align="right">
+                    <img src="/logo.png?company=${object.user_id.company_id.id}" style="padding:0px;margin: 0px; height: auto; width: 80px;" alt="${object.user_id.company_id.name}"/>
+                </td></tr>
+                <tr><td colspan="2" style="text-align:center;">
+                  <hr style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin:16px 0px 16px 0px;" width="100%"/>
+                </td></tr>
+            </tbody></table>
+        </td>
+    </tr>
+    <!-- CONTENT -->
+    <tr>
+        <td style="min-width:590px;" align="center">
+            <table style="min-width:590px;background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;" width="590" cellspacing="0" cellpadding="0" border="0">
+                <tbody><tr><td style="font-size:13px;" valign="top">
+                    <div>
+                        Hello,<br/>
+                        Please find report of the workshop <strong>${object.workshop_subject}</strong> that took place on ${object.workshop_location} at ${object.workshop_date.strftime('%d %b, %Y')}.<br/><br/>
+                        The following were present :<br/>
+                        <ul>
+                        % for attendee in object.attendee_ids:
+                            <li>
+                                <span style="margin-left:5px">${attendee.name},
+                                % if attendee.parent_name
+                                    ${attendee.parent_name}
+                                % endif
+                                % if attendee.company_name
+                                    ${attendee.company_name}
+                                % endif
+                                % if attendee.function :
+                                - ${attendee.function or ''}
+                                % endif
+                                </span>
+                            </li>
+                        % endfor
+                        </ul>
+                        <br/>
+                        As a reminder, we have identified the following points :<br/>
+                        <ul>
+                        % for o in object.get_companies():
+                        <li>${o[1]}</li>
+                            <ul>
+                            % for item in object.todo_ids:
+                                % if item.partner_id.id == o[0] or (item.partner_id and item.partner_id.parent_id.id == o[0])
+                                    <li>
+                                        <span style="margin-left:5px">
+                                            ${item.name}, ${item.type_id.name}, ${item.partner_id.name} : ${item.description} (${item.date_deadline.strftime('%d %b, %Y')})
+                                        </span>
+                                    </li>
+                                % endif
+                            % endfor
+                            </ul>
+                        % endfor
+                        </ul>
+                        <br/>
+                        Do not hesitate to contact us if you have any questions.
+                        <br/>
+                    </div>
+                </td></tr>
+                <tr><td style="text-align:center;">
+                  <hr style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin: 16px 0px 16px 0px;" width="100%"/>
+                </td></tr>
+            </tbody></table>
+        </td>
+    </tr>
+    <!-- FOOTER -->
+    <tr>
+        <td style="min-width:590px;" align="center">
+            <table style="min-width:590px;background-color: white; font-size: 11px; padding: 0px 8px 0px 8px; border-collapse:separate;" width="590" cellspacing="0" cellpadding="0" border="0">
+                <tbody>
+                    <tr>
+                        <td valign="middle" align="left">
+                            ${object.workshop_content | safe}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</tbody>
+</table>
+</td></tr>
+<!-- POWERED BY -->
+<tr><td style="min-width:590px;" align="center">
+    <table style="min-width:590px;background-color: #F1F1F1; color: #454748; padding: 8px; border-collapse:separate;" width="590" cellspacing="0" cellpadding="0" border="0">
+      <tbody><tr><td style="text-align:center;font-size: 13px;">
+        Powered by <a target="_blank" href="https://apik.cloud" style="color:#875A7B;">Apik</a>
+      </td></tr>
+    </tbody></table>
+</td></tr>
+</tbody></table>
             </field>
             <!-- <field name="report_template" ref="action_report_saleorder"/> -->
             <!-- <field name="report_name">${(object.name or '').replace('/','_')}</field> -->

@@ -12,6 +12,7 @@
 
             <xpath expr="//field[@name='company_id']" position="before">
               <field name='allow_workshop'/>
+              <field name='workshop_name' attrs="{'invisible': [('allow_workshop', '!=', True)]}"/>
             </xpath>
         </field>
     </record>
