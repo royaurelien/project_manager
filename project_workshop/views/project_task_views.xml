@@ -53,16 +53,24 @@
 
               <page name="workshop_page" string="Workshop" attrs="{'invisible': [('is_workshop','!=',True)]}">
                 <group cols="4">
+                <group cols="2">
                   <field name='workshop_subject' string="Subject" attrs="{'required': [('is_workshop', '=', True)]}"/>
                   <field name='workshop_location' string="Location"/>
+                </group>
+                <group cols="2">
                   <field name='workshop_url' string="Url" widget='url'/>
                   <field name='workshop_date' string="Date" widget="datetime"/>
-                  <field name='workshop_content' string="Description"/>
-                  <field name='workshop_note' string="Note"/>
                 </group>
-
+                </group>
+                <group cols="4" string="Description">
+                  <field name='workshop_content' nolabel="1"/>
+                </group>
+                <group cols="4" string="Note">
+                  <field name='workshop_note' nolabel="1"/>
+                </group>
+                <group cols="4" string="Todo">
                   <field name="todo_ids"
-                      string="Project Todo"
+                      nolabel="1"
                       widget="section_and_note_one2many"
                       mode="tree"
                       context="{'default_task_id': id, 'default_project_id': project_id}">
@@ -78,7 +86,7 @@
                       <field name='is_done' widget='boolean_toggle' optional="hide"/>
                     </tree>
                   </field>
-
+                </group>
               </page>
               <page name="attendees_page" string="Attendees" attrs="{'invisible': [('is_workshop','!=',True)]}">
                 <field name='attendee_ids' widget="section_and_note_one2many">
